@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Poddar Family Tree</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+--bg:linear-gradient(160deg,#fdf6e7 0%,#f6e4c3 55%,#efd3a6 100%);--card:#fff;--ink:#3b2a1a;--sub:#7a6650;--line:#a8742c;--accent:#8c2f39;--hl:#ffe58a;
+--y:#f7e8a4;--g:#dfe6cf;--l:#dcd8ee;--b:#cfe9f8;--p:#f8c8de;--s:#fcd9c8;--m:#cfe8d6;--bar:rgba(255,250,238,.88)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:linear-gradient(160deg,#1c1511 0%,#271a16 55%,#321f1a 100%);--card:#2a211a;--ink:#f3e8d6;--sub:#c2ae92;--line:#c9923f;--accent:#e58a8f;--hl:#6b5a14;
+--y:#5a4a1c;--g:#3b4630;--l:#3f3a58;--b:#1f4458;--p:#5b2b42;--s:#5a3626;--m:#25472f;--bar:rgba(35,25,20,.9)}}
+:root[data-theme="dark"]{--bg:linear-gradient(160deg,#1c1511 0%,#271a16 55%,#321f1a 100%);--card:#2a211a;--ink:#f3e8d6;--sub:#c2ae92;--line:#c9923f;--accent:#e58a8f;--hl:#6b5a14;
+--y:#5a4a1c;--g:#3b4630;--l:#3f3a58;--b:#1f4458;--p:#5b2b42;--s:#5a3626;--m:#25472f;--bar:rgba(35,25,20,.9)}
+html{scroll-padding-top:env(safe-area-inset-top,0px);height:100%}
+body{margin:0;min-height:100%;background:var(--bg) fixed;color:var(--ink);font-family:Georgia,'Times New Roman',serif}
+h1{text-align:center;font-weight:normal;letter-spacing:.14em;margin:18px 12px 2px;color:var(--accent)}
+p.hint{text-align:center;color:var(--sub);margin:0 12px 10px;font-size:14px}
+.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;display:flex;flex-wrap:wrap;gap:8px;justify-content:center;align-items:center;padding:8px 12px;background:var(--bar);backdrop-filter:blur(6px);border-bottom:1px solid var(--line)}
+.bar input{font:inherit;font-size:14px;padding:7px 12px;border:1.5px solid var(--line);border-radius:20px;background:var(--card);color:var(--ink);width:min(260px,60vw)}
+.bar button{font:inherit;font-size:13px;padding:7px 14px;border:1.5px solid var(--line);border-radius:20px;background:var(--card);color:var(--ink);cursor:pointer}
+.bar button:hover{border-color:var(--accent);color:var(--accent)}
+#cnt{font-size:12px;color:var(--sub)}
+.wrap{overflow-x:auto;padding:18px 16px 60px}
+.tree{display:flex;justify-content:center;min-width:max-content}
+.tree ul{display:flex;justify-content:center;padding:20px 0 0;margin:0;position:relative}
+.tree>ul{padding-top:0}
+.tree li{list-style:none;text-align:center;position:relative;padding:20px 8px 0}
+.tree>ul>li{padding-top:0}
+.tree li::before,.tree li::after{content:'';position:absolute;top:0;right:50%;width:50%;height:20px;border-top:2px solid var(--line)}
+.tree li::after{right:auto;left:50%;border-left:2px solid var(--line)}
+.tree>ul>li::before,.tree>ul>li::after,.tree li:only-child::before,.tree li:only-child::after{display:none}
+.tree li:only-child{padding-top:0}
+.tree li:first-child::before,.tree li:last-child::after{border:0}
+.tree li:last-child::before{border-right:2px solid var(--line);border-radius:0 8px 0 0}
+.tree li:first-child::after{border-radius:8px 0 0 0}
+.tree ul ul::before{content:'';position:absolute;top:0;left:50%;height:20px;border-left:2px solid var(--line)}
+.node{font:inherit;color:var(--ink);background:var(--t,var(--y));border:2px solid var(--line);border-radius:10px;padding:8px 12px;min-width:110px;max-width:170px;cursor:default;position:relative;box-shadow:0 2px 5px rgba(80,50,10,.15)}
+.node.has{cursor:pointer}
+.node.has:hover{border-color:var(--accent);transform:translateY(-1px)}
+.node.open{border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 25%,transparent)}
+.node.hit{background:var(--hl);outline:3px solid var(--accent)}
+.node .n{display:block;font-weight:bold;font-size:14px}
+.node .s{display:block;font-size:12px;color:var(--sub);margin-top:2px}
+.node .b{position:absolute;right:-8px;top:-9px;background:var(--accent);color:#fff;border-radius:10px;font-size:11px;padding:1px 7px;font-family:sans-serif}
+.node.leaf{border-style:dashed}
+.kids{animation:in .25s ease}
+@keyframes in{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}
+</style>
+</head>
+<body>
+<h1>PODDAR FAMILY TREE</h1>
+<p class="hint">Tap a name to reveal the next generation. Tap again to collapse.</p>
+<div class="bar">
+<input id="q" type="search" placeholder="Search a name…" autocomplete="off">
+<button id="ea">Expand all</button><button id="ca">Collapse all</button><span id="cnt"></span>
+</div>
+<div class="wrap"><div class="tree" id="tree"></div></div>
+<script>
+// ===== EDIT YOUR FAMILY DATA HERE =====
+// N(name, spouse/note, [children], city)  -> use 0 to skip a field
+const N=(n,s,c,loc)=>({n,s,c,loc});
+const DATA=N("Sh. Brindaban Ji",0,[
+ N("Sh. Hariram Ji",0,[
+  N("Sh. Kaluram Ji Poddar","1st wife: Singhania family · 2nd wife: Smt. Harmukhi Baiji Poddar",[
+   N("Sh. Bhujan Lal Ji Poddar","Expired at young age"),
+   N("Sh. Birdichand Ji Poddar",0,[
+    N("Sh. Partia Ji Poddar","Expired at young age"),
+    N("Smt. Banarsi Baiji Saraf","& Sh. Ram Kumar Ji Saraf",0,"Fatehpur"),
+    N("Smt. Dhapu Baiji Saravgi","& Sh. Nand Kishor Ji Saravgi",0,"Fatehpur"),
+    N("Smt. Mannia Baiji Goenka","& Sh. Goenka Ji",0,"Laxmangarh / Jaffna-Srilanka")
+   ]),
+   N("Sh. Ramrikhdas Ji Poddar","2nd wife: Smt. Ramdevi Poddar",[
+    N("Sh. Dharaprasad Ji Poddar","& Smt. Geeta Devi Poddar",[
+     N("Sh. Ramesh Poddar","& Smt. Asha Poddar",[
+      N("Shivani Tibrewal","& Vineet Tibrewal",[N("Darsh Tibrewal"),N("Esha Tibrewal")]),
+      N("Vishal Poddar","& Amrita Poddar"),
+      N("Anuja Mundra","& Rajiv Mundra",[N("Shreyan Mundra")])
+     ]),
+     N("Sh. Pawan Poddar","& Smt. Madhu Poddar",[
+      N("Avnish Poddar","& Vithika Poddar",[N("Agastya Poddar"),N("Twarita Poddar")]),
+      N("Anurag Poddar","& Megha Poddar",[N("Ira Poddar"),N("Mahi Poddar")])
+     ]),
+     N("Sh. Pramod Poddar","& Smt. Sangeeta Poddar",[
+      N("Gaurav Poddar","& Smriti Poddar",[N("Manya Poddar"),N("Shivansh Poddar")]),
+      N("Ankit Poddar","& Anshruta Poddar",[N("Kanushi Poddar"),N("Rushiv Poddar")])
+     ]),
+     N("Smt. Sunita Agarwal","& Sh. Radha Kishan Agarwal",[
+      N("Umang Agarwal","& Sonal Agarwal",[N("Aryan Agarwal"),N("Vanshika Agarwal")]),
+      N("Shweta Agarwal","& Parvesh Agarwal",[N("Sohum Agarwal"),N("Vivaan Agarwal")])
+     ]),
+     N("Sh. Kishan Poddar","& Smt. Vibha Poddar",[
+      N("Abhishek Poddar","& Vihari Poddar",[N("Kiara Poddar"),N("Dhrissh Poddar"),N("Veera Poddar")]),
+      N("Harshit Poddar","& Bianka Poddar",[N("Sara Poddar")])
+     ]),
+     N("Smt. Savita Bhojnagarwala","& Sh. Rajesh Bhojnagarwala",[
+      N("Shraddha Dhandhania","& Arpit Dhandhania")
+     ])
+    ]),
+    N("Sh. Chandi Prasad Ji Poddar"),
+    N("Sh. Mahabirprasad Ji Poddar","& Smt. Trevinidevi Poddar",[
+     N("Sh. Suresh Poddar","& Smt. Shyama Poddar",[
+      N("Aarti Shorewala","& Shirish Shorewala",[N("Vatsal Shorewala"),N("Sanskar Shorewala")],"Delhi"),
+      N("Anchal Deora","& Karthik Deora",[N("Aryaman Deora"),N("Harsh Deora")],"Bombay"),
+      N("Shikha Kandoi","& Ashwin Kandoi",[N("Armaan Kandoi")],"Bombay"),
+      N("Rishabh Poddar")
+     ]),
+     N("Sh. Arvind Poddar","& Smt. Vijayalaxmi Poddar",[
+      N("Pooja Dhoot","& Anirudh Dhoot",[N("Raunak Dhoot")],"Bombay"),
+      N("Rajiv Poddar","& Khushboo Poddar",[N("Avika Poddar"),N("Hritika Poddar")])
+     ]),
+     N("Sh. Vinod Poddar","& Smt. Sunita Poddar",[
+      N("Rahul Poddar","& Darshika Poddar",[N("Parina Poddar")]),
+      N("Rishita Gupta","& Arpit Gupta",[N("Aviraj Gupta")])
+     ]),
+     N("Smt. Sushila Mahansaria","& Sh. Ashok Mahansaria",[
+      N("Vandana Lath","& Laxmikant Lath",[N("Sanjana Lath"),N("Siddhanth Lath")]),
+      N("Yogesh Mahansaria","& Swati Mahansaria",[N("Ananya Mahansaria"),N("Anika Mahansaria"),N("Arjun Mahansaria")]),
+      N("Sheetal Sonthalia","& Navneet Sonthalia",[N("Vrinda Sonthalia"),N("Aadya Sonthalia")])
+     ]),
+     N("Smt. Kusum Goenka","& Sh. Sushil Goenka",[
+      N("Shashank Goenka","& Priyanka Goenka",[N("Udhhav Goenka"),N("Avyaan Goenka"),N("Vivaan Goenka")]),
+      N("Megha Mehta","& Anshul Mehta",[N("Atharva Mehta"),N("Aadya Mehta")])
+     ])
+    ]),
+    N("Smt. Panabai Baiji Khemka","& Sh. Khemka Ji"),
+    N("Sh. Ramprasad Ji Poddar","& Smt. Pushpadevi Poddar",[
+     N("Sh. Dinesh Poddar","& Smt. Shilpa Poddar",[
+      N("Rhea Loyalka","& Anushuman Loyalka"),N("Prabhat Poddar")
+     ]),
+     N("Sh. Rajesh Poddar","& Smt. Nupur Poddar",[N("Aryan Poddar"),N("Vedant Poddar")]),
+     N("Smt. Anita Saraf","& Sh. Neeraj Saraf",[N("Isha Ruia","& Rohan Ruia")])
+    ]),
+    N("Smt. Geeta Baiji Bajaj","& Sh. Bajaj Ji"),
+    N("Smt. Gayatri Baiji Garodia","& Sh. Nathmal Ji Garodia"),
+    N("Smt. Rukmani Baiji","& Sh."),
+    N("Smt. Vimla Devi Rungta","& Sh. Vishwanath Ji Rungta"),
+    N("Smt. Radha Baiji Mandavewala","& Sh. Kailash Ji Mandavewala")
+   ]),
+   N("Smt. Jadia Baiji Murarka","& Sh. Murarka Ji",0,"Fatehpur"),
+   N("Smt. Basanti Baiji Kamalia","& Sh. Kamalia Ji",0,"Kolkata"),
+   N("Smt. Basdei Baiji Saraf","& Sh. Purshottamlal Ji Saraf",0,"Bombay"),
+   N("Smt. Ratni Baiji Kamalia","& Sh. Maliram Ji Kamalia",0,"Bissau / Bombay"),
+   N("Smt. Tarbini Baiji Lohia","& Sh. Laxminarayan Ji Lohia",0,"Fatehpur / Agra"),
+   N("Sh. Jhabarmal Ji Poddar","& Smt. Dhapi Baiji Poddar",[
+    N("Sh. Narayanprasad Ji Poddar","& Smt. Sitadevi Poddar",[
+     N("Sh. Santosh Poddar","& Smt. Nirmala Poddar",[
+      N("Manisha Gupta","& Robin Gupta",[N("Nitesh Gupta"),N("Nitika Gupta")],"Delhi"),
+      N("Mansee Parekh","& Alpesh Parekh",[N("Pranaay Parekh"),N("Darsh Parekh")],"Bombay / Bengaluru"),
+      N("Manvee Vaid","& Vivek Vaid",[N("Varun Vaid"),N("Ria Vaid")],"Bombay / USA"),
+      N("Saloni Rungta","& Ajit Rungta",0,"Australia"),
+      N("Anchal Desai","& Viral Desai",[N("Aditya Desai")],"Bombay"),
+      N("Anirudh Poddar","& Zainab Poddar",[N("Dia Poddar"),N("Aarav Poddar")])
+     ]),
+     N("Smt. Usha Kajaria","& Sh. Ajay Kajaria",[
+      N("Akhilesh Kajaria","& Kavita Kajaria",[N("Aneesh Kajaria"),N("Aarush Kajaria")],"Kolkata"),
+      N("Aditya Kajaria",0,[N("Ahaan Kajaria")],"USA")
+     ],"Kolkata"),
+     N("Sh. Arunkumar Poddar","& Smt. Aruna Poddar",[
+      N("Rachana Poddar"),
+      N("Rohit Poddar","& Neha Poddar",[N("Vihaan Poddar"),N("Aarnaa Poddar")])
+     ]),
+     N("Smt. Sudha Saraf","& Sh. Sanjeev Saraf",[
+      N("Gaurav Saraf","& Lavanya Saraf",0,"USA")
+     ],"Kolkata / Australia"),
+     N("Smt. Ashadevi Poddar"),
+     N("Smt. Shashi Shah","& Sh. Deepak Shah",0,"Bombay"),
+     N("Sh. Vimal Poddar","& Smt. Chaula Poddar",[
+      N("Gautam Poddar","& Snigdha Poddar",0,"USA"),
+      N("Gaurang Poddar","& Pallavi Poddar")
+     ])
+    ]),
+    N("Smt. Pannai Baiji Parasrampuria","& Sh. Shubhkaran Ji Parasrampuria",0,"Bombay")
+   ]),
+   N("Sh. Baluram Ji Poddar","& Smt. Draupadi Devi Poddar",[
+    N("Sh. Kamal Kantji Poddar"),
+    N("Sh. Kamal Kumar Poddar","& Smt. Sharda Devi Poddar",[
+     N("Anuradha Agarwal","& Sanjay Agarwal",[N("Advika Agarwal")],"Bombay"),
+     N("Anupriya Agarwal","& Parv Agarwal",0,"Bombay"),
+     N("Anushree Kanodia","& Rohit Kanodia",0,"Bombay"),
+     N("Anubhav Poddar","& Aditi Poddar",[N("Anaaya Poddar"),N("Ayrah Poddar")])
+    ])
+   ])
+  ])
+ ]),
+ N("Sh. Gurdial Ji"),
+ N("Sh. Hajarimal Ji"),
+ N("Smt. Jana Baiji Saravgi","Married in Saravgi family",0,"Fatehpur")
+]);
+// =======================================
+
+
+// Branch colours (same as your original chart). Children inherit the colour.
+const TINT={"Sh. Birdichand Ji Poddar":"g","Sh. Dharaprasad Ji Poddar":"l","Sh. Mahabirprasad Ji Poddar":"b",
+"Sh. Ramprasad Ji Poddar":"s","Sh. Jhabarmal Ji Poddar":"p","Sh. Baluram Ji Poddar":"m"};
+let mode="root",query="";
+
+function mark(d){
+  d._hit=!!query&&d.n.toLowerCase().includes(query)||!!query&&(d.s||"").toLowerCase().includes(query);
+  d._sub=false;
+  (d.c||[]).forEach(k=>{mark(k);if(k._hit||k._sub)d._sub=true});
+}
+function build(d,tint){
+  tint=TINT[d.n]||tint;
+  const li=document.createElement('li'),b=document.createElement('button'),kids=d.c||[];
+  b.className='node'+(kids.length?' has':' leaf')+(d._hit?' hit':'');
+  b.style.setProperty('--t','var(--'+tint+')');
+  b.innerHTML='<span class="n"></span>'+(d.s?'<span class="s"></span>':'')+(d.loc?'<span class="s loc"></span>':'')+(kids.length?'<span class="b">'+kids.length+'</span>':'');
+  b.querySelector('.n').textContent=d.n;
+  if(d.s)b.querySelector('.s').textContent=d.s;
+  if(d.loc)b.querySelector('.loc').textContent='('+d.loc+')';
+  li.appendChild(b);
+  if(kids.length){
+    let ul=null;
+    const open=()=>{ul=document.createElement('ul');ul.className='kids';kids.forEach(k=>ul.appendChild(build(k,tint)));li.appendChild(ul);b.classList.add('open')};
+    b.onclick=()=>{if(ul){ul.remove();ul=null;b.classList.remove('open')}else open()};
+    if(mode==="all"||(mode==="search"&&d._sub))open();
+  }
+  return li;
+}
+function render(){
+  mark(DATA);
+  const t=document.getElementById('tree');t.innerHTML='';
+  const r=document.createElement('ul');r.appendChild(build(DATA,'y'));t.appendChild(r);
+  const hits=t.querySelectorAll('.hit');
+  document.getElementById('cnt').textContent=query?hits.length+' found':'';
+  if(hits[0])hits[0].scrollIntoView({block:'center',inline:'center',behavior:'smooth'});
+}
+document.getElementById('ea').onclick=()=>{mode="all";query="";document.getElementById('q').value='';render()};
+document.getElementById('ca').onclick=()=>{mode="root";query="";document.getElementById('q').value='';render()};
+document.getElementById('q').oninput=e=>{query=e.target.value.trim().toLowerCase();mode=query?"search":"root";render()};
+render();
+</script>
+</body>
+</html>
